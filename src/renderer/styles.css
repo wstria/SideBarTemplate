@@ -1,0 +1,561 @@
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --chrome: #000000;
+  --rail: #000000;
+  --sidebar: #000000;
+  --stage: #000000;
+  --tab: #161618;
+  --tab-hover: #1d1d20;
+  --tab-active: #242428;
+  --line: #222225;
+  --line-bright: #33333a;
+  --text: #ececec;
+  --muted: #a1a1aa;
+  --quiet: #6e6e78;
+  --accent: #10a37f;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size: 14px;
+  --radius: 10px;
+  --topbar-h: 52px;
+  --rail-w: 48px;
+  --traffic: 92px;
+  --sidebar-w: 248px;
+}
+
+/* Fullscreen: no traffic lights, so collapse the left gutter to the rail
+   width — the first tab then lines up with the editor's left edge. */
+:root.is-fullscreen {
+  --traffic: var(--rail-w);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.003em;
+}
+
+button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: default;
+}
+
+button:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: -2px;
+}
+
+svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.icon-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.topbar {
+  height: var(--topbar-h);
+  flex: 0 0 var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 14px 0 0;
+  background: var(--chrome);
+  -webkit-app-region: drag;
+}
+
+/* Empty left gutter above the rail that holds the macOS traffic lights, so
+   the tab strip starts clear of them. (Wider than the rail below — the two
+   can't share a width once the window buttons are present.) */
+.topbar-gutter {
+  width: var(--traffic);
+  flex: 0 0 var(--traffic);
+  height: 100%;
+  -webkit-app-region: drag;
+  transition: width .35s cubic-bezier(.4, 0, .2, 1),
+    flex-basis .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+.icon-button,
+.new-tab {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--muted);
+  -webkit-app-region: no-drag;
+}
+
+.icon-button:hover,
+.new-tab:hover {
+  background: var(--tab-hover);
+  color: var(--text);
+}
+
+.tabstrip {
+  height: 100%;
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: drag;
+}
+
+.tablist {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-app-region: drag;
+}
+
+.tablist::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  width: 230px;
+  max-width: 40vw;
+  height: 35px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--muted);
+  text-align: left;
+  -webkit-app-region: no-drag;
+}
+
+.tab:hover {
+  background: var(--tab-hover);
+  color: var(--text);
+}
+
+.tab.active {
+  background: var(--tab-active);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.tab.enter {
+  animation: tab-in .29s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.tab.leaving {
+  overflow: hidden;
+  pointer-events: none;
+  animation: tab-out .2s ease-in forwards;
+}
+
+.tab-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-close {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--quiet);
+}
+
+.tab-close svg {
+  width: 13px;
+  height: 13px;
+}
+
+.tab-close:hover {
+  background: var(--line-bright);
+  color: var(--text);
+}
+
+.new-tab svg {
+  width: 17px;
+  height: 17px;
+}
+
+.body {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--rail-w) var(--sidebar-w) minmax(0, 1fr);
+  padding: 0 10px 9px 0;
+  transition: grid-template-columns .4s cubic-bezier(.4, 0, .2, 1);
+  will-change: grid-template-columns;
+}
+
+.shell.sidebar-closed .body {
+  grid-template-columns: var(--rail-w) 0 minmax(0, 1fr);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  background: var(--rail);
+}
+
+.rail-bottom {
+  margin-top: auto;
+}
+
+.sidebar {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--sidebar);
+  opacity: 1;
+  transition: opacity .4s cubic-bezier(.4, 0, .2, 1);
+  will-change: opacity;
+}
+
+.shell.sidebar-closed .sidebar {
+  opacity: 0;
+}
+
+/* Fixed width so the search bar is clipped, not reflowed, as the column
+   collapses — plus a small slide for polish. */
+.sidebar-head {
+  width: var(--sidebar-w);
+  padding: 10px;
+  transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+.shell.sidebar-closed .sidebar-head {
+  transform: translateX(-8px);
+}
+
+/* Settings navigation — only shown while the Settings tab is active. */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: var(--sidebar-w);
+  padding: 4px 8px;
+}
+
+.sidebar-nav[hidden] {
+  display: none;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: left;
+  cursor: default;
+}
+
+.nav-item:hover {
+  background: var(--tab-hover);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--tab-active);
+  color: var(--text);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: var(--tab);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.search:focus-within {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.search svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--quiet);
+}
+
+.search-input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  appearance: none;
+}
+
+.search-input::placeholder {
+  color: var(--quiet);
+}
+
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--stage);
+  transition: border-radius .36s ease;
+}
+
+.shell.sidebar-closed .stage {
+  border-radius: var(--radius);
+}
+
+/* ---- Settings view (rendered inside the stage for the Settings tab) ---- */
+.settings {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.settings-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 52px 40px 64px;
+}
+
+.setting-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+.setting-note {
+  margin: 8px 0 28px;
+  max-width: 52ch;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 34px;
+  padding: 6px 0;
+}
+
+.setting-row label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text);
+}
+
+.val {
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.setting-row select {
+  min-width: 160px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--tab);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font: inherit;
+}
+
+.setting-row input[type="range"] {
+  width: 220px;
+  max-width: 55%;
+  accent-color: var(--accent);
+}
+
+.setting-row input[type="color"] {
+  width: 46px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--tab);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 4px;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 5px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 11px;
+  background: var(--tab);
+  box-shadow: inset 0 0 0 1px var(--line);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.preset:hover {
+  transform: translateY(-1px);
+}
+
+.preset.selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.preset-swatch {
+  display: flex;
+  height: 34px;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+}
+
+.preset-swatch span {
+  flex: 1;
+}
+
+.preset-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.settings-foot {
+  margin-top: 32px;
+}
+
+.btn {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: var(--tab);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+  transition: box-shadow .15s ease, background .15s ease;
+}
+
+.btn:hover {
+  background: var(--tab-hover);
+  box-shadow: inset 0 0 0 1px var(--line-bright);
+}
+
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tab-out {
+  to {
+    width: 0;
+    max-width: 0;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+    opacity: 0;
+    transform: scale(.95);
+  }
+}
+
+@media (max-width: 650px) {
+  :root {
+    --sidebar-w: 150px;
+    --rail-w: 44px;
+  }
+
+  .tab {
+    width: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
