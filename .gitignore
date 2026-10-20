@@ -1,0 +1,18 @@
+# Dependencies and packaged apps
+node_modules/
+dist/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+
+# Editor, OS, and temporary files
+.DS_Store
+.vscode/
+.idea/
+*.log
+coverage/
